@@ -9,15 +9,30 @@ be passed in in \code{decom}.
 """
 function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2; decom=false, arb_prec = 100, short_prec = 128)
   n = fmpz(nn)
+  #@vprint :TestCompactRep 1 "Doing compact rep.\n"
+  t = time()
+
+  @v_do :TestCompactRep 3 begin
+    st = stacktrace()
+    println("Stacktrace:")
+    for i=3:min(13, length(st))
+      s = st[i]
+      printstyled(">> $(s.func) $(s.file) $(s.line)\n", color=:blue)
+    end
+  end
 
   K = base_ring(a)
   if isempty(a.fac)
+    t0 = time() - t
+    @vprint :TestCompactRep 1 "Compact rep returned early: $(t0)\n"
     return a
   end
 
+  t1 = 0
+  de = Dict{NfOrdIdl, fmpz}()
   if typeof(decom) == Bool
     ZK = lll(maximal_order(K))
-    de::Dict{NfOrdIdl, fmpz} = factor_coprime(a, IdealSet(ZK), refine = true)
+    t1 = @elapsed de = factor_coprime(a, IdealSet(ZK), refine = true)
   else
     #de = Dict{NfOrdIdl, fmpz}((p, v) for (p, v) = decom)
     de = Dict((p, v) for (p, v) = decom)
@@ -49,6 +64,11 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   @vprint :CompactPresentation 1 "First reduction step\n"
   cached_red = Dict{NfOrdIdl, Dict{Int, Tuple{NfOrdIdl, FacElem{nf_elem, AnticNumberField}}}}()
   n_iterations = Int(flog(_v, n))
+
+
+  ideal_file = "$(COMPACT_REP_DIR)/$(NUM_COMPACT_REPS)_$(deg)"
+  t2 = 0
+  t3 = 0
   for _k = n_iterations:-1:0
     @vprint :CompactPresentation 3 "Reducing the support: step $(_k) / $(n_iterations)\n"
     B = Dict{NfOrdIdl, Int}()
@@ -62,7 +82,7 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
         if haskey(Dp, e_p)
           Ap, ap = Dp[e_p]
         else
-          Ap, ap = power_reduce(p, fmpz(e_p))
+          t2 += @elapsed Ap, ap = power_reduce(p, fmpz(e_p))
           Dp[e_p] = (Ap, ap)
         end
         add_to_key!(B, Ap, 1)
@@ -70,7 +90,7 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
         v -= Ref(n^_k) .* conjugates_arb_log_normalise(ap, arb_prec)
       else
         Dp = Dict{Int, Tuple{NfOrdIdl, FacElem{nf_elem, AnticNumberField}}}()
-        Ap, ap = power_reduce(p, fmpz(e_p))
+        t2 += @elapsed Ap, ap = power_reduce(p, fmpz(e_p))
         Dp[e_p] = (Ap, ap)
         cached_red[p] = Dp
         add_to_key!(B, Ap, 1)
@@ -79,7 +99,8 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
       end
     end
     add_to_key!(B, A, n)
-    @vtime :CompactPresentation 3 A, alpha = reduce_ideal(FacElem(B))
+    save_ideal(B, string(ideal_file, "_$(_k)_of_$(n_iterations)"))
+    t3 += @elapsed A, alpha = reduce_ideal(FacElem(B))
     mul!(be, be, alpha^(-(n^_k)))
     #be *= alpha^(-(n^_k))
     v -= Ref(n^_k) .* conjugates_arb_log_normalise(alpha, arb_prec)
@@ -124,6 +145,11 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   @hassert :CompactPresentation 2 length(de) != 0 || isone(ideal(ZK, a*be))
   @hassert :CompactPresentation 2 length(de) == 0 || ideal(ZK, a*be) == FacElem(de)
 
+  t4 = 0
+  t5 = 0
+  t6 = 0
+  t7 = 0
+  t8 = 0
   while k>=1
     @vprint :CompactPresentation 1 "k now: $k\n"
     D = Dict((p, div(fmpz(v), n^k)) for (p, v) = de if v >= n^k)
@@ -154,11 +180,11 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
       push!(vvv, r)
     end
     @assert abs(sum(vvv)) <= degree(K)
-    @vtime :CompactPresentation 1 eA = (simplify(evaluate(A, coprime = true)))
-    @vtime :CompactPresentation 1 id = inv(eA)
+    t4 += @elapsed eA = (simplify(evaluate(A, coprime = true)))
+    t5 += @elapsed id = inv(eA)
     local b
     while true
-      @vtime :CompactPresentation 1 b = short_elem(id, matrix(FlintZZ, 1, length(vvv), vvv), prec = short_prec) # the precision needs to be done properly...
+      t6 += @elapsed b = short_elem(id, matrix(FlintZZ, 1, length(vvv), vvv), prec = short_prec) # the precision needs to be done properly...
       if abs(norm(b)//norm(id))> fmpz(2)^abs(sum(vvv))*fmpz(2)^degree(K)*abs(discriminant(ZK)) # the trivial case
         short_prec *= 2
         continue
@@ -175,13 +201,13 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
       de[p] -= n^k*v
     end
 
-    @vtime :CompactPresentation 1 B = simplify(b*eA)
+    t7 += @elapsed B = simplify(b*eA)
     @assert isone(B.den)
     B1 = B.num
     @assert norm(B1) <= abs(discriminant(ZK))
 
     @vprint :CompactPresentation 1 "Factoring ($(B1.gen_one), $(B1.gen_two)) of norm $(norm(B1))\n"
-    @vtime :CompactPresentation 1 lfB1 = factor_easy(B1)
+    t8 += @elapsed lfB1 = factor_easy(B1)
     for (p, _v) = lfB1
       if haskey(de, p)
         de[p] += _v*n^k
@@ -213,10 +239,25 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   @hassert :CompactPresentation 1 length(de) == 0 && isone(abs(factored_norm(a*be))) == 1 ||
                                     factored_norm(ideal(ZK, a*be)) == abs(factored_norm(FacElem(de)))
   @vprint :CompactPresentation 1 "Final eval...\n"
-  @vtime :CompactPresentation 1 A = evaluate(FacElem(de), coprime = true)
-  @vtime :CompactPresentation 1 b_ev = evaluate_mod(a*be, A)
-  inv!(be)
+  t9 = @elapsed A = evaluate(FacElem(de), coprime = true)
+  t10 = @elapsed b_ev = evaluate_mod(a*be, A)
+  t11 = @elapsed inv!(be)
   add_to_key!(be.fac, b_ev, fmpz(1))
+
+  t0 = time() - t
+  K = base_ring(a)
+
+  zx, x = ZZ["x"]
+  deg = degree(K)
+  pol = zx(defining_polynomial(K))
+
+  #@vprint :TestCompactRep 1 "Total time: $(elapsed)\n"
+  compact_rep_file = "$(COMPACT_REP_DIR)/compact_reps.csv"
+  open(compact_rep_file, "a") do io
+    Base.write(io, string(join([deg,pol,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11], ","), "\n"))
+  end
+  NUM_COMPACT_REPS[] += 1
+  
   return be
 end
 

@@ -40,6 +40,8 @@ For more information please visit
 
 """
 module Hecke
+global const COMPACT_REP_DIR = Ref{String}("~/compact_rep_out")
+global const NUM_COMPACT_REPS = Ref{Int}(0)
 
 ################################################################################
 #

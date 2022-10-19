@@ -100,8 +100,9 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
       end
     end
     add_to_key!(B, A, n)
-    save_ideal(B, string(ideal_file, "_$(_k)_of_$(n_iterations)"))
-    t3 += @elapsed A, alpha = reduce_ideal(FacElem(B))
+    F = FacElem(B)
+    save_ideal(F, string(ideal_file, "_$(_k)_of_$(n_iterations)"))
+    t3 += @elapsed A, alpha = reduce_ideal(F)
     mul!(be, be, alpha^(-(n^_k)))
     #be *= alpha^(-(n^_k))
     v -= Ref(n^_k) .* conjugates_arb_log_normalise(alpha, arb_prec)

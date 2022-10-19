@@ -908,4 +908,7 @@ precompile(class_group, (NfAbsOrd{AnticNumberField, nf_elem},))
 
 using .NormRel
 
+include("../../AbNfTools/src/Misc/Deserialize.jl")
+include("../../AbNfTools/src/Misc/FileIO.jl")
+
 end # module

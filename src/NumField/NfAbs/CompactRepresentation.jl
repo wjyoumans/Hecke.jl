@@ -66,6 +66,7 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   n_iterations = Int(flog(_v, n))
 
 
+  deg = degree(K)
   ideal_file = "$(COMPACT_REP_DIR)/$(NUM_COMPACT_REPS)_$(deg)"
   t2 = 0
   t3 = 0
@@ -248,7 +249,6 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   K = base_ring(a)
 
   zx, x = ZZ["x"]
-  deg = degree(K)
   pol = zx(defining_polynomial(K))
 
   #@vprint :TestCompactRep 1 "Total time: $(elapsed)\n"

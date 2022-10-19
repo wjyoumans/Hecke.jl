@@ -67,7 +67,7 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
 
 
   deg = degree(K)
-  ideal_file = "$(COMPACT_REP_DIR)/$(NUM_COMPACT_REPS)_$(deg)"
+  ideal_file = "$(COMPACT_REP_DIR[])/$(NUM_COMPACT_REPS[])_$(deg)"
   t2 = 0
   t3 = 0
   for _k = n_iterations:-1:0
@@ -253,7 +253,7 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   pol = zx(defining_polynomial(K))
 
   #@vprint :TestCompactRep 1 "Total time: $(elapsed)\n"
-  compact_rep_file = "$(COMPACT_REP_DIR)/compact_reps.csv"
+  compact_rep_file = "$(COMPACT_REP_DIR[])/compact_reps.csv"
   open(compact_rep_file, "a") do io
     Base.write(io, string(join([deg,pol,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11], ","), "\n"))
   end

@@ -1,4 +1,5 @@
 
+import Base: write
 export save_ideal, read_facelem_ideal
 
 function break_apart(I::NfOrdIdl)

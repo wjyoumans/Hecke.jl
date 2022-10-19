@@ -4,6 +4,8 @@ export induce_rational_reconstruction, induce_crt, root, roots,
        is_kummer_extension, cyclotomic_field, wildanger_field,
        compositum
 
+add_verbose_scope(:TestCompactRep)
+add_assert_scope(:TestCompactRep)
 add_verbose_scope(:PolyFactor)
 add_assert_scope(:PolyFactor)
 add_verbose_scope(:CompactPresentation)

@@ -12,6 +12,13 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   #@vprint :TestCompactRep 1 "Doing compact rep.\n"
   NUM_COMPACT_REPS[] += 1
 
+  @vprint :TestCompactRep 1 "Compact rep #$(NUM_COMPACT_REPS[]):"
+  @vprint :TestCompactRep 1 "a = $a\n"
+  @vprint :TestCompactRep 1 "n = $n\n"
+  @vprint :TestCompactRep 1 "arb_prec = $arb_prec\n"
+  @vprint :TestCompactRep 1 "short_prec = $short_prec\n"
+  @vprint :TestCompactRep 1 "decom = $decom\n"
+
   K = base_ring(a)
   deg = degree(K)
   out_fn = "$(COMPACT_REP_DIR[])/$(NUM_COMPACT_REPS[])_$(deg)"

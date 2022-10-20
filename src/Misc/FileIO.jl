@@ -141,7 +141,7 @@ function save_field(K::AnticNumberField, file::String)
   zz, x = ZZ["x"]
   g = defining_polynomial(K)
   open(file, "w") do f
-    write(f, _fmpz_poly_to_vector_bigint(zz(g)))
+    write(f, string(_fmpz_poly_to_vector_bigint(zz(g))))
     write(f, "\n")
   end
 end

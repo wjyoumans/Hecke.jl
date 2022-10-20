@@ -1,6 +1,6 @@
 
 import Base: write
-export save_ideal, read_facelem_ideal
+export save_ideal, save_field, save_factored_element, read_factored_ideal, read_field, read_factored_element
 
 function break_apart(I::NfOrdIdl)
   O = order(I)
@@ -45,6 +45,10 @@ end
 
 function _nf_elem_to_vector_bigint(a::nf_elem)
   return Rational{BigInt}[Rational{BigInt}(coeff(a, i)) for i in 0:degree(parent(a)) - 1]
+end
+
+function _fmpz_poly_to_vector_bigint(a::fmpz_poly)
+  return BigInt[BigInt(coeff(a, i)) for i in 0:degree(a) - 1]
 end
 
 function break_apart(a::FacElem{nf_elem, AnticNumberField})
@@ -132,6 +136,27 @@ function assemble_nf(fcoeff, auts)
 end
 
 
+
+function save_field(K::AnticNumberField, file::String)
+  zz, x = ZZ["x"]
+  f = defining_polynomial(K)
+  open(file, "w") do f
+    write(f, _fmpz_poly_to_vector_bigint(zz(f)))
+    write(f, "\n")
+  end
+end
+
+function read_field(K::AnticNumberField, file::String)
+  zz, x = ZZ["x"]
+  open(file, "r") do f
+    for s in eachline(f)
+      f = Meta.eval(Meta.parse(s))
+      K = NumberField(zz(f))
+      break
+    end
+  end
+  return K
+end
 
 ################################################################################
 #
@@ -252,9 +277,7 @@ function save_ideal(I::FacElem{NfOrdIdl}, file::String)
   ks = keys(d)
   K = nf(first(ks))
 
-  zz, x = ZZ["x"]
   open(file, "w") do f
-    write(f, string(zz(defining_polynomial(K))), "\n")
     for k in ks
       Hecke.assure_2_normal(k)
       A = [K(k.gen_one), K(k.gen_two)]
@@ -267,7 +290,7 @@ function save_ideal(I::FacElem{NfOrdIdl}, file::String)
   end
 end
 
-function read_facelem_ideal(OK::NfOrd, file::String)
+function read_factored_ideal(OK::NfOrd, file::String)
   K = nf(OK)
   
   out = Dict{NfOrdIdl, Int}()

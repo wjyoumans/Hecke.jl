@@ -10,6 +10,18 @@ be passed in in \code{decom}.
 function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2; decom=false, arb_prec = 100, short_prec = 128)
   n = fmpz(nn)
   #@vprint :TestCompactRep 1 "Doing compact rep.\n"
+  NUM_COMPACT_REPS[] += 1
+
+  K = base_ring(a)
+  deg = degree(K)
+  out_fn = "$(COMPACT_REP_DIR[])/$(NUM_COMPACT_REPS[])_$(deg)"
+
+  field_file = string(out_fn, ".field")
+  save_field(K, field_file)
+
+  facelem_file = string(out_fn, ".in")
+  save_factored_element(a, facelem_file)
+
   t = time()
 
   @v_do :TestCompactRep 3 begin
@@ -21,7 +33,6 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
     end
   end
 
-  K = base_ring(a)
   if isempty(a.fac)
     t0 = time() - t
     @vprint :TestCompactRep 1 "Compact rep returned early: $(t0)\n"
@@ -66,8 +77,7 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   n_iterations = Int(flog(_v, n))
 
 
-  deg = degree(K)
-  ideal_file = "$(COMPACT_REP_DIR[])/$(NUM_COMPACT_REPS[])_$(deg)"
+  ideal_file = string(out_fn, ".ideal")
   t2 = 0
   t3 = 0
   for _k = n_iterations:-1:0
@@ -257,7 +267,6 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   open(compact_rep_file, "a") do io
     Base.write(io, string(join([deg,pol,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11], ","), "\n"))
   end
-  NUM_COMPACT_REPS[] += 1
   
   return be
 end

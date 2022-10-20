@@ -29,7 +29,9 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   facelem_file = string(out_fn, ".in")
   save_factored_element(a, facelem_file)
 
-  save_ideal(FacElem(decom), string(out_fn, ".decom"))
+  if typeof(decom) != Bool
+    save_ideal(FacElem(decom), string(out_fn, ".decom"))
+  end
 
   t = time()
 

@@ -139,9 +139,9 @@ end
 
 function save_field(K::AnticNumberField, file::String)
   zz, x = ZZ["x"]
-  f = defining_polynomial(K)
+  g = defining_polynomial(K)
   open(file, "w") do f
-    write(f, _fmpz_poly_to_vector_bigint(zz(f)))
+    write(f, _fmpz_poly_to_vector_bigint(zz(g)))
     write(f, "\n")
   end
 end
@@ -150,8 +150,8 @@ function read_field(K::AnticNumberField, file::String)
   zz, x = ZZ["x"]
   open(file, "r") do f
     for s in eachline(f)
-      f = Meta.eval(Meta.parse(s))
-      K = NumberField(zz(f))
+      g = Meta.eval(Meta.parse(s))
+      K = NumberField(zz(g))
       break
     end
   end

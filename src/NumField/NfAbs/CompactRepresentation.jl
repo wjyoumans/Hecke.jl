@@ -13,11 +13,11 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
   NUM_COMPACT_REPS[] += 1
 
   @vprint :TestCompactRep 1 "Compact rep #$(NUM_COMPACT_REPS[]):"
-  @vprint :TestCompactRep 1 "a = $a\n"
+  #@vprint :TestCompactRep 1 "a = $a\n"
   @vprint :TestCompactRep 1 "n = $n\n"
   @vprint :TestCompactRep 1 "arb_prec = $arb_prec\n"
   @vprint :TestCompactRep 1 "short_prec = $short_prec\n"
-  @vprint :TestCompactRep 1 "decom = $decom\n"
+  #@vprint :TestCompactRep 1 "decom = $decom\n"
 
   K = base_ring(a)
   deg = degree(K)
@@ -28,6 +28,8 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
 
   facelem_file = string(out_fn, ".in")
   save_factored_element(a, facelem_file)
+
+  save_ideal(FacElem(decom), string(out_fn, ".decom"))
 
   t = time()
 

@@ -52,12 +52,12 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
     ZK = lll(maximal_order(K))
     t1 = @elapsed de = factor_coprime(a, IdealSet(ZK), refine = true)
   else
-    save_ideal(FacElem(decom), string(out_fn, ".decom"))
     #de = Dict{NfOrdIdl, fmpz}((p, v) for (p, v) = decom)
     de = Dict((p, v) for (p, v) = decom)
     if length(decom) == 0
       ZK = lll(maximal_order(K))
     else
+      save_ideal(FacElem(decom), string(out_fn, ".decom"))
       ZK = order(first(keys(decom)))
     end
   end

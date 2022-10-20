@@ -252,7 +252,9 @@ function save_ideal(I::FacElem{NfOrdIdl}, file::String)
   ks = keys(d)
   K = nf(first(ks))
 
+  zz, x = ZZ["x"]
   open(file, "w") do f
+    write(f, string(zz(defining_polynomial(K))), "\n")
     for k in ks
       Hecke.assure_2_normal(k)
       A = [K(k.gen_one), K(k.gen_two)]

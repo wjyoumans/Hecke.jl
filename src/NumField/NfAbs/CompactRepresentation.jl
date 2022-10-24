@@ -21,14 +21,6 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
 
   K = base_ring(a)
   deg = degree(K)
-  out_fn = "$(COMPACT_REP_DIR[])/$(NUM_COMPACT_REPS[])_$(deg)"
-
-  field_file = string(out_fn, ".field")
-  save_field(K, field_file)
-
-  facelem_file = string(out_fn, ".in")
-  save_factored_element(a, facelem_file)
-
   t = time()
 
   @v_do :TestCompactRep 3 begin
@@ -57,7 +49,6 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
     if length(decom) == 0
       ZK = lll(maximal_order(K))
     else
-      save_ideal(FacElem(decom), string(out_fn, ".decom"))
       ZK = order(first(keys(decom)))
     end
   end
@@ -119,7 +110,6 @@ function compact_presentation(a::FacElem{nf_elem, AnticNumberField}, nn::Int = 2
     end
     add_to_key!(B, A, n)
     F = FacElem(B)
-    save_ideal(F, string(ideal_file, "_$(_k)_of_$(n_iterations)"))
     t3 += @elapsed A, alpha = reduce_ideal(F)
     mul!(be, be, alpha^(-(n^_k)))
     #be *= alpha^(-(n^_k))

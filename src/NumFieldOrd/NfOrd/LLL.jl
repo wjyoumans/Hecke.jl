@@ -1017,6 +1017,8 @@ end
 # better basis to start the computation of LLL
 #We compute the hnf to have a guaranteed bound on the entries
 function _lll_product_basis(I::NfOrdIdl, J::NfOrdIdl)
+  return basis_matrix(IJ, copy = false)
+  #=
   A = lll(I)[2]
   mul!(A, A, basis_matrix(I, copy = false))
   IJ = I*J
@@ -1029,6 +1031,7 @@ function _lll_product_basis(I::NfOrdIdl, J::NfOrdIdl)
   @vtime :LLL 3 lll!(iA)
   mul!(iA, iA, A)
   return iA
+  =#
 end
 
 
